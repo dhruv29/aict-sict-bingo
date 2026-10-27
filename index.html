@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AICT vs SICT Bingo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0b1726">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;800&family=Figtree:wght@400;500;700&display=swap">
+<style>
+html{padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: one-screen phone card — header, 5x5 board filling width, sticky action bar. Dark keynote-hall look by design. */
+:root{
+  --bg:#0b1726; --panel:#122238; --tile:#eef3f6; --tile-ink:#16202c;
+  --line:#26405e; --green:#7ee36b; --green-deep:#3aa62a; --ink:#f2f7fa; --muted:#93a7bb;
+  --display:"Sora",system-ui,sans-serif; --body:"Figtree",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-tap-highlight-color:transparent;
+  background-image:radial-gradient(120% 60% at 50% -10%, #1d3a5c 0%, transparent 60%);}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:14px 96px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.event{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);line-height:1.5}
+.event b{display:block;color:var(--green);font-weight:700}
+h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(22px,6.5vw,30px);line-height:1.05;text-wrap:balance}
+h1 span{color:var(--green);font-weight:600;font-size:.7em;padding:0 .15em}
+.letters{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.letters div{font-family:var(--display);font-weight:800;font-size:clamp(20px,7vw,30px);text-align:center;color:var(--green);
+  border:2px solid var(--green);border-radius:10px;padding:2px 0;background:#0e1e30;transition:background .25s,color .25s}
+.letters div.on{background:var(--green);color:#0b1726}
+.status{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.status strong{color:var(--ink)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.cell{position:relative;aspect-ratio:1/1.12;max-width:100%;border:0;border-radius:9px;background:var(--tile);color:var(--tile-ink);
+  font:500 clamp(9px,2.55vw,13px)/1.2 var(--body);padding:5px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  text-align:center;cursor:pointer;transition:transform .12s, background .2s, color .2s;min-width:0;overflow:hidden}
+.cell b{font-weight:700}
+.cell svg{width:clamp(16px,5vw,26px);height:auto;flex:none;stroke:var(--tile-ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cell svg .g{fill:var(--green);stroke:var(--tile-ink)}
+.cell:active{transform:scale(.95)}
+.cell:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.cell.marked{background:var(--green-deep);color:#fff}
+.cell.marked svg{stroke:#fff}
+.cell.marked svg .g{fill:#fff;stroke:#fff}
+.cell.marked::after{content:"";position:absolute;inset:6%;border:3px solid rgba(255,255,255,.85);border-radius:50%;transform:rotate(-8deg);pointer-events:none;animation:stamp .25s ease-out}
+.cell.win{background:var(--green);color:#0b1726;box-shadow:0 0 0 2px #fff inset}
+.cell.win svg{stroke:#0b1726}.cell.win svg .g{fill:#0b1726;stroke:#0b1726}
+.cell.win::after{border-color:#0b1726}
+.cell.free{background:var(--green);color:#0b1726}
+.cell.free::after{display:none}
+.cell.free b{font-family:var(--display);font-size:1.05em}
+@keyframes stamp{from{transform:scale(1.4) rotate(-8deg);opacity:0}to{transform:scale(1) rotate(-8deg);opacity:1}}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,23,38,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:8px}
+button.btn{flex:1;font:700 14px var(--body);border-radius:12px;padding:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button.btn.primary{background:var(--green);border-color:var(--green);color:#0b1726}
+button.btn:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.confirm{display:flex;gap:8px;align-items:center;flex:1}
+.confirm span{font-size:13px;color:var(--muted);flex:1}
+.toast{position:fixed;inset:0;display:grid;place-items:center;background:rgba(5,12,20,.7);z-index:20;padding:24px}
+.toast .card{background:var(--panel);border:2px solid var(--green);border-radius:18px;padding:24px 22px;text-align:center;max-width:320px;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.toast h2{font-family:var(--display);font-size:44px;margin:0;color:var(--green);letter-spacing:.06em}
+.toast p{margin:8px 0 18px;color:var(--muted);line-height:1.45}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+canvas{position:fixed;inset:0;pointer-events:none;z-index:30}
+footer{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>AICT <span>vs</span> SICT</h1>
+    <div class="event" style="text-align:right">World Forum<b>Amsterdam 2026</b></div>
+  </header>
+  <div class="letters" id="letters"><div>B</div><div>I</div><div>N</div><div>G</div><div>O</div></div>
+  <div class="status"><span><strong id="count">1</strong>/25 marked</span><span><strong id="lines">0</strong> bingo lines</span></div>
+  <div class="board" id="board" role="grid" aria-label="Bingo board"><button class="cell" id="cell-0" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18l-1 3 4-2h9a4 4 0 004-4V9a4 4 0 00-4-4H7a4 4 0 00-4 4v6a4 4 0 002 3z" class="g"/><path d="M8 10h8M8 13h5"/></svg><span>They say <b>“AICT”</b> instead of “SICT”</span></button><button class="cell" id="cell-1" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" class="g"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></svg><span>Say <b>“ServiceNow AI Control Tower”</b></span></button><button class="cell" id="cell-2" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4M8 14v-3M11 14V9M14 14v-4M17 14V8"/></svg><span>Show the <b>AI Control Tower dashboard</b></span></button><button class="cell" id="cell-3" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="8" width="14" height="10" rx="3" class="g"/><path d="M12 4v4M3 12v3M21 12v3"/><circle cx="12" cy="3.5" r="1"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/></svg><span>Mention <b>agentic AI</b></span></button><button class="cell" id="cell-4" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M12 3v18M3 12h18"/><rect x="12" y="3" width="9" height="9" class="g"/></svg><span>Say <b>“single pane of glass”</b></span></button><button class="cell" id="cell-5" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" class="g"/><circle cx="5.5" cy="10" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M6 20a6 6 0 0112 0zM2 19a4 4 0 015-3.8M22 19a4 4 0 00-5-3.8"/></svg><span>Use the term <b>“AI agents”</b></span></button><button class="cell" id="cell-6" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3l1.5 4.5L15 9l-4.5 1.5L9 15l-1.5-4.5L3 9l4.5-1.5z" class="g"/><path d="M17 13l.8 2.2L20 16l-2.2.8L17 19l-.8-2.2L14 16l2.2-.8z"/></svg><span>Mention <b>Now Assist</b></span></button><button class="cell" id="cell-7" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 6l5 2v4c0 3-2 5-5 6z" class="g"/></svg><span>Talk about <b>governance, risk or guardrails</b></span></button><button class="cell" id="cell-8" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3 20a7 7 0 0114 0"/><path d="M19 11l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z" class="g"/></svg><span><b>Customer success story</b></span></button><button class="cell" id="cell-9" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" class="g"/></svg><span>Show a <b>live demo</b></span></button><button class="cell" id="cell-10" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg><span>Mention <b>CSDM with AI</b></span></button><button class="cell" id="cell-11" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="9" width="4" height="11" rx="1" class="g"/><rect x="16" y="4" width="4" height="16" rx="1"/></svg><span>Talk about <b>productivity gains</b></span></button><button class="cell free" id="cell-12" aria-label="Free space"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" style="fill:#0b1726;stroke:#0b1726"/></svg><b>FREE</b><span>“AI” twice on one slide</span></button><button class="cell" id="cell-13" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-5 9 5z" class="g"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg><span>Mention <b>industry use case</b> (FSI, Public Sector…)</span></button><button class="cell" id="cell-14" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5l1.8 2.6 3.1-.6.6 3.1 2.6 1.8-1.6 2.6 1.6 2.6-2.6 1.8-.6 3.1-3.1-.6L12 21.5l-1.8-2.6-3.1.6-.6-3.1-2.6-1.8L5.5 12 3.9 9.4l2.6-1.8.6-3.1 3.1.6z" class="g"/></svg><span>Use the term <b>“AI-powered workflows”</b></span></button><button class="cell" id="cell-15" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="10" cy="5.5" rx="6" ry="2.3"/><path d="M4 5.5v11c0 1.3 2.7 2.3 6 2.3M16 5.5V11"/><circle cx="17" cy="17" r="4" class="g"/><path d="M15.3 17l1.2 1.2 2.2-2.4"/></svg><span>Say <b>“data readiness”</b> for AI</span></button><button class="cell" id="cell-16" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5" class="g"/><circle cx="5" cy="18" r="2.5" class="g"/><circle cx="19" cy="18" r="2.5" class="g"/><path d="M10.7 7.2L6.3 15.8M13.3 7.2l4.4 8.6M7.5 18h9"/></svg><span>Mention <b>AI Control Tower integrations</b></span></button><button class="cell" id="cell-17" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-9 6-14 15-15-1 9-6 15-15 15z" class="g"/><path d="M5 19l8-8"/></svg><span>Talk about <b>responsible AI</b></span></button><button class="cell" id="cell-18" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4 4 0 01-.5-8 6 6 0 0111.5 1.5A3.5 3.5 0 0117.5 18z"/></svg><span>Use the term <b>“platform for AI agents”</b></span></button><button class="cell" id="cell-19" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 00-14-4.5L4 8M4 4v4h4M4 13a8 8 0 0014 4.5l2-1.5M20 20v-4h-4"/></svg><span><b>Compare AICT vs SICT</b> (or rebranding)</span></button><button class="cell" id="cell-20" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11l4-4 4 2 3-2 4 1 5 4-4 4-6-1" class="g"/><path d="M6 13l3 3M8.5 11.5l3.5 3.5M11 10l3 3"/></svg><span>Mention <b>partner ecosystem</b></span></button><button class="cell" id="cell-21" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17h6M10 20h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/><path d="M12 10v6"/></svg><span>Say <b>“the future of work”</b></span></button><button class="cell" id="cell-22" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 00-8 13l-1 5 5-1.5A9 9 0 1012 3z"/><path d="M9.5 9.5a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M12 16v.5"/></svg><span>Audience <b>Q&amp;A mentions AI</b></span></button><button class="cell" id="cell-23" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M6 16l4-5 3 3 6-7M15 7h4v4"/></svg><span>Talk about <b>measurable ROI</b></span></button><button class="cell" id="cell-24" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="2.8" class="g"/><circle cx="5.5" cy="9" r="2.2" class="g"/><circle cx="18.5" cy="9" r="2.2" class="g"/><path d="M7 20a5 5 0 0110 0zM1.5 19a4 4 0 017-3M22.5 19a4 4 0 00-7-3"/></svg><span>Use the term <b>“cross-functional collaboration”</b></span></button></div>
+  <footer>Tap a square when you hear it. Your board is saved on this phone.</footer>
+</div>
+
+<div class="bar"><div class="in" id="barIn"></div></div>
+<div class="toast" id="toast" hidden><div class="card"><h2>BINGO!</h2><p id="toastMsg">You completed a line.</p><button class="btn primary" id="toastClose" style="width:100%">Keep playing</button></div></div>
+<canvas id="fx"></canvas>
+
+<script>
+const I={
+ chat:'<path d="M5 18l-1 3 4-2h9a4 4 0 004-4V9a4 4 0 00-4-4H7a4 4 0 00-4 4v6a4 4 0 002 3z" class="g"/><path d="M8 10h8M8 13h5"/>',
+ layers:'<path d="M12 3l9 5-9 5-9-5z" class="g"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/>',
+ dash:'<rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4M8 14v-3M11 14V9M14 14v-4M17 14V8"/>',
+ robot:'<rect x="5" y="8" width="14" height="10" rx="3" class="g"/><path d="M12 4v4M3 12v3M21 12v3"/><circle cx="12" cy="3.5" r="1"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/>',
+ grid:'<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M12 3v18M3 12h18"/><rect x="12" y="3" width="9" height="9" class="g"/>',
+ people:'<circle cx="12" cy="8" r="3" class="g"/><circle cx="5.5" cy="10" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M6 20a6 6 0 0112 0zM2 19a4 4 0 015-3.8M22 19a4 4 0 00-5-3.8"/>',
+ sparkle:'<path d="M9 3l1.5 4.5L15 9l-4.5 1.5L9 15l-1.5-4.5L3 9l4.5-1.5z" class="g"/><path d="M17 13l.8 2.2L20 16l-2.2.8L17 19l-.8-2.2L14 16l2.2-.8z"/>',
+ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 6l5 2v4c0 3-2 5-5 6z" class="g"/>',
+ star:'<circle cx="10" cy="8" r="3.5"/><path d="M3 20a7 7 0 0114 0"/><path d="M19 11l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z" class="g"/>',
+ play:'<circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" class="g"/>',
+ db:'<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
+ bars:'<rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="9" width="4" height="11" rx="1" class="g"/><rect x="16" y="4" width="4" height="16" rx="1"/>',
+ bank:'<path d="M3 9l9-5 9 5z" class="g"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',
+ gear:'<circle cx="12" cy="12" r="3.5"/><path d="M12 2.5l1.8 2.6 3.1-.6.6 3.1 2.6 1.8-1.6 2.6 1.6 2.6-2.6 1.8-.6 3.1-3.1-.6L12 21.5l-1.8-2.6-3.1.6-.6-3.1-2.6-1.8L5.5 12 3.9 9.4l2.6-1.8.6-3.1 3.1.6z" class="g"/>',
+ dbcheck:'<ellipse cx="10" cy="5.5" rx="6" ry="2.3"/><path d="M4 5.5v11c0 1.3 2.7 2.3 6 2.3M16 5.5V11"/><circle cx="17" cy="17" r="4" class="g"/><path d="M15.3 17l1.2 1.2 2.2-2.4"/>',
+ nodes:'<circle cx="12" cy="5" r="2.5" class="g"/><circle cx="5" cy="18" r="2.5" class="g"/><circle cx="19" cy="18" r="2.5" class="g"/><path d="M10.7 7.2L6.3 15.8M13.3 7.2l4.4 8.6M7.5 18h9"/>',
+ leaf:'<path d="M5 19c0-9 6-14 15-15-1 9-6 15-15 15z" class="g"/><path d="M5 19l8-8"/>',
+ cloud:'<path d="M7 18a4 4 0 01-.5-8 6 6 0 0111.5 1.5A3.5 3.5 0 0117.5 18z"/>',
+ sync:'<path d="M20 11a8 8 0 00-14-4.5L4 8M4 4v4h4M4 13a8 8 0 0014 4.5l2-1.5M20 20v-4h-4"/>',
+ hands:'<path d="M2 11l4-4 4 2 3-2 4 1 5 4-4 4-6-1" class="g"/><path d="M6 13l3 3M8.5 11.5l3.5 3.5M11 10l3 3"/>',
+ bulb:'<path d="M9 17h6M10 20h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/><path d="M12 10v6"/>',
+ q:'<path d="M12 3a9 9 0 00-8 13l-1 5 5-1.5A9 9 0 1012 3z"/><path d="M9.5 9.5a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M12 16v.5"/>',
+ roi:'<path d="M3 3v18h18"/><path d="M6 16l4-5 3 3 6-7M15 7h4v4"/>',
+ team:'<circle cx="12" cy="7" r="2.8" class="g"/><circle cx="5.5" cy="9" r="2.2" class="g"/><circle cx="18.5" cy="9" r="2.2" class="g"/><path d="M7 20a5 5 0 0110 0zM1.5 19a4 4 0 017-3M22.5 19a4 4 0 00-7-3"/>',
+ freestar:'<path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" style="fill:#0b1726;stroke:#0b1726"/>'
+};
+const SQUARES=[
+ ['They say <b>“AICT”</b> instead of “SICT”','chat'],
+ ['Say <b>“ServiceNow AI Control Tower”</b>','layers'],
+ ['Show the <b>AI Control Tower dashboard</b>','dash'],
+ ['Mention <b>agentic AI</b>','robot'],
+ ['Say <b>“single pane of glass”</b>','grid'],
+ ['Use the term <b>“AI agents”</b>','people'],
+ ['Mention <b>Now Assist</b>','sparkle'],
+ ['Talk about <b>governance, risk or guardrails</b>','shield'],
+ ['<b>Customer success story</b>','star'],
+ ['Show a <b>live demo</b>','play'],
+ ['Mention <b>CSDM with AI</b>','db'],
+ ['Talk about <b>productivity gains</b>','bars'],
+ null,
+ ['Mention <b>industry use case</b> (FSI, Public Sector…)','bank'],
+ ['Use the term <b>“AI-powered workflows”</b>','gear'],
+ ['Say <b>“data readiness”</b> for AI','dbcheck'],
+ ['Mention <b>AI Control Tower integrations</b>','nodes'],
+ ['Talk about <b>responsible AI</b>','leaf'],
+ ['Use the term <b>“platform for AI agents”</b>','cloud'],
+ ['<b>Compare AICT vs SICT</b> (or rebranding)','sync'],
+ ['Mention <b>partner ecosystem</b>','hands'],
+ ['Say <b>“the future of work”</b>','bulb'],
+ ['Audience <b>Q&amp;A mentions AI</b>','q'],
+ ['Talk about <b>measurable ROI</b>','roi'],
+ ['Use the term <b>“cross-functional collaboration”</b>','team']
+];
+const FREE=12, KEY='aict-sict-bingo-v1';
+const LINES=[];
+for(let i=0;i<5;i++){LINES.push([0,1,2,3,4].map(j=>i*5+j));LINES.push([0,1,2,3,4].map(j=>j*5+i));}
+LINES.push([0,6,12,18,24],[4,8,12,16,20]);
+
+let state={order:[...Array(25).keys()],marked:Array(25).fill(false),seen:0};
+try{const s=JSON.parse(window.localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===25&&Array.isArray(s.marked)&&s.marked.length===25)state=s;}catch(e){}
+state.marked[FREE]=true;
+const save=()=>{try{window.localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+
+const board=document.getElementById('board');
+function render(){
+  board.innerHTML='';
+  const wins=winLines(), winCells=new Set(wins.flat());
+  state.order.forEach((sq,pos)=>{
+    const b=document.createElement('button');
+    b.className='cell';b.id='cell-'+pos;b.setAttribute('role','gridcell');
+    if(sq===FREE){
+      b.classList.add('free');
+      b.innerHTML='<svg viewBox="0 0 24 24">'+I.freestar+'</svg><b>FREE</b><span>“AI” twice on one slide</span>';
+      b.setAttribute('aria-label','Free space');
+    }else{
+      const [t,ic]=SQUARES[sq];
+      b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+I[ic]+'</svg><span>'+t+'</span>';
+      b.setAttribute('aria-pressed',state.marked[pos]);
+      if(state.marked[pos])b.classList.add('marked');
+      if(winCells.has(pos))b.classList.add('win');
+      b.onclick=()=>toggle(pos);
+    }
+    board.appendChild(b);
+  });
+  document.getElementById('count').textContent=state.marked.filter(Boolean).length;
+  document.getElementById('lines').textContent=wins.length;
+  [...document.getElementById('letters').children].forEach((d,i)=>d.classList.toggle('on',i<wins.length));
+}
+function winLines(){return LINES.filter(l=>l.every(p=>state.marked[p]));}
+function toggle(pos){
+  state.marked[pos]=!state.marked[pos];
+  if(navigator.vibrate)try{navigator.vibrate(state.marked[pos]?15:0)}catch(e){}
+  const n=winLines().length;
+  if(n>state.seen){celebrate(n)}
+  state.seen=n;save();render();
+}
+function celebrate(n){
+  const msg=n>=12?'Blackout! Every square on the board.':n===1?'First line complete. Shout it out!':n+' lines and counting.';
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toast').hidden=false;confetti();
+}
+document.getElementById('toastClose').onclick=()=>document.getElementById('toast').hidden=true;
+
+const barIn=document.getElementById('barIn');
+function bar(mode){
+  if(mode==='confirm'){
+    barIn.innerHTML='<div class="confirm"><span>Clear all marks?</span><button class="btn" id="no">Cancel</button><button class="btn primary" id="yes">Clear</button></div>';
+    document.getElementById('no').onclick=()=>bar();
+    document.getElementById('yes').onclick=()=>{state.marked=Array(25).fill(false);state.marked[FREE]=true;state.seen=0;save();render();bar();};
+  }else{
+    barIn.innerHTML='<button class="btn" id="shuffle">Shuffle board</button><button class="btn" id="reset">New game</button>';
+    document.getElementById('shuffle').onclick=()=>{
+      const rest=[...Array(25).keys()].filter(i=>i!==FREE);
+      for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
+      rest.splice(FREE,0,FREE);state.order=rest;state.marked=Array(25).fill(false);state.marked[FREE]=true;state.seen=0;save();render();
+    };
+    document.getElementById('reset').onclick=()=>bar('confirm');
+  }
+}
+
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const c=document.getElementById('fx'),x=c.getContext('2d');
+  c.width=innerWidth;c.height=innerHeight;
+  const cols=['#7ee36b','#ffffff','#3aa62a','#c9f5bf'];
+  const ps=Array.from({length:140},()=>({x:c.width/2,y:c.height*.45,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,s:4+Math.random()*5,r:Math.random()*6,c:cols[Math.random()*4|0]}));
+  let f=0;(function tick(){
+    x.clearRect(0,0,c.width,c.height);
+    ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore();});
+    if(++f<110)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height);
+  })();
+}
+function start(){try{render();}catch(e){console.error(e);}try{bar();}catch(e){console.error(e);}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+</script>
+</body>
+</html>
